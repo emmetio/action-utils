@@ -22,7 +22,7 @@ interface CSSProperty {
 /**
  * Returns context CSS section for given location in source code
  */
-export function contextSection(code: string, pos: number): CSSSection | void {
+export function getCSSSection(code: string, pos: number): CSSSection | void {
     const stack: CSSTokenRange[] = [];
     const pool: CSSTokenRange[] = [];
     let result: CSSSection | void = void 0;
@@ -40,7 +40,7 @@ export function contextSection(code: string, pos: number): CSSSection | void {
                 result = {
                     start: sel[0],
                     end,
-                    bodyStart: sel[2],
+                    bodyStart: sel[2] + 1,
                     bodyEnd: start
                 };
                 return false;

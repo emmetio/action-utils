@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { deepStrictEqual as deepEqual } from 'assert';
-import { selectItemCSS } from '../src/css';
+import { selectItemCSS, getCSSSection } from '../src/css';
 
 const sample = fs.readFileSync(path.resolve(__dirname, './samples/sample.scss'), 'utf8');
 
@@ -36,12 +36,48 @@ describe('CSS', () => {
 
     });
 
-    it.only('select previous item', () => {
+    it('select previous item', () => {
+        // list-style-type: none;
         deepEqual(selectItemCSS(sample, 70, true), {
             start: 43,
             end: 65,
             ranges: [[43, 65], [60, 64]]
         });
-        console.log(selectItemCSS(sample, 70, true));
+
+        // border-top: 2px solid transparent;
+        deepEqual(selectItemCSS(sample, 206, true), {
+            start: 163,
+            end: 197,
+            ranges: [
+                [163, 197],
+                [175, 196],
+                [175, 178],
+                [179, 184],
+                [185, 196]
+            ]
+        });
+
+        // > li
+        deepEqual(selectItemCSS(sample, 163, true), {
+            start: 148,
+            end: 152,
+            ranges: [[148, 152]]
+        });
+    });
+
+    it('get section', () => {
+        deepEqual(getCSSSection(sample, 260), {
+            start: 257,
+            end: 377,
+            bodyStart: 269,
+            bodyEnd: 376
+        }, '&.selected');
+
+        deepEqual(getCSSSection(sample, 207), {
+            start: 148,
+            end: 383,
+            bodyStart: 154,
+            bodyEnd: 382
+        }, '> li');
     });
 });

@@ -10,10 +10,10 @@ export interface ContextTag {
 }
 
 /**
- * Returns context tag for given position in code. If open or self-closed tag found,
- * returns parsed attributes as well
+ * Check if there’s open or self-closing tag under given `pos` location in source code.
+ * If found, returns its name, range in source and parsed attributes
  */
-export function contextTag(code: string, pos: number): ContextTag | void {
+export function getOpenTag(code: string, pos: number): ContextTag | void {
     let tag: ContextTag | void = void 0;
     const opt = createOptions();
 
