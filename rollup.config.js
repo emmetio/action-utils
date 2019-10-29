@@ -3,6 +3,7 @@ import nodeResolve from 'rollup-plugin-node-resolve';
 
 export default {
     input: './src/index.ts',
+    external: ['emmet', '@emmetio/html-matcher', '@emmetio/css-matcher'],
     plugins: [nodeResolve(), typescript({
         tsconfigOverride: {
             compilerOptions: { module: 'esnext' }

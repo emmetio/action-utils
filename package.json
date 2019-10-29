@@ -27,8 +27,8 @@
     "typescript": "^3.6.4"
   },
   "dependencies": {
-    "@emmetio/css-matcher": "^0.1.0",
-    "@emmetio/html-matcher": "^1.1.1",
+    "@emmetio/css-matcher": "^0.1.1",
+    "@emmetio/html-matcher": "^1.1.2",
     "emmet": "^2.0.0-rc.5"
   },
   "mocha": {
