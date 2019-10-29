@@ -11,7 +11,7 @@ export interface CSSSection {
     properties?: CSSProperty[];
 }
 
-interface CSSProperty {
+export interface CSSProperty {
     name: TextRange;
     value: TextRange;
     valueTokens: TextRange[];
@@ -21,11 +21,12 @@ interface CSSProperty {
 
 /**
  * Returns context CSS section for given location in source code
+ * @param properties Parse inner properties
  */
-export function getCSSSection(code: string, pos: number): CSSSection | void {
+export function getCSSSection(code: string, pos: number, properties?: boolean): CSSSection | undefined {
     const stack: CSSTokenRange[] = [];
     const pool: CSSTokenRange[] = [];
-    let result: CSSSection | void = void 0;
+    let result: CSSSection | undefined;
 
     scan(code, (type, start, end, delimiter) => {
         if (start > pos && !stack.length) {
@@ -48,6 +49,10 @@ export function getCSSSection(code: string, pos: number): CSSSection | void {
             releaseRange(pool, sel);
         }
     });
+
+    if (result && properties) {
+        result.properties = parseProperties(code, result.bodyStart, result.bodyEnd);
+    }
 
     return result;
 }
@@ -182,6 +187,59 @@ function selectPreviousItem(code: string, pos: number): SelectItemModel | void {
 
         return result;
     }
+}
+
+/**
+ * Parses properties in `from:to` fragment of `code`. Note that `from:to` must
+ * point to CSS section content, e.g. *inside* `{` and `}` (or top-level code context),
+ * all properties found in nested sections will be ignored
+ */
+function parseProperties(code: string, from = 0, to = code.length): CSSProperty[] {
+    const fragment = code.substring(from, to);
+    const result: CSSProperty[] = [];
+    const pool: CSSTokenRange[] = [];
+    let pendingName: CSSTokenRange | void;
+    let nested = 0;
+    let before = from;
+
+    scan(fragment, (type, start, end, delimiter) => {
+        if (type === TokenType.Selector) {
+            nested++;
+        } else if (type === TokenType.BlockEnd) {
+            nested--;
+            before = from + end;
+        } else if (!nested) {
+            if (type === TokenType.PropertyName) {
+                if (pendingName) {
+                    // Create property with empty value
+                    const valuePos = pendingName[2];
+                    result.push(createProperty(fragment, pendingName, before, valuePos, valuePos, valuePos, from));
+                    releaseRange(pool, pendingName);
+                    before = from + start;
+                }
+                pendingName = allocRange(pool, start, end, delimiter);
+            } else if (type === TokenType.PropertyValue) {
+                if (pendingName) {
+                    result.push(createProperty(fragment, pendingName, before, start, end, delimiter, from));
+                    releaseRange(pool, pendingName);
+                    pendingName = void 0;
+                }
+                before = from + delimiter + 1;
+            }
+        }
+    });
+
+    return result;
+}
+
+function createProperty(code: string, name: CSSTokenRange, before: number, start: number, end: number, delimiter: number, offset = 0): CSSProperty {
+    return {
+        name: [offset + name[0], offset + name[1]],
+        value: [offset + start, offset + end],
+        valueTokens: splitValue(code.substring(start, end), offset + start),
+        before,
+        after: offset + delimiter + 1,
+    };
 }
 
 /**
