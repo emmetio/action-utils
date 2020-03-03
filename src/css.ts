@@ -3,18 +3,18 @@ import { pushRange, TextRange, SelectItemModel } from './utils';
 
 type CSSTokenRange = [number, number, number];
 
-export interface CSSSection {
+export interface CSSSection<Prop = CSSProperty> {
     start: number;
     end: number;
     bodyStart: number;
     bodyEnd: number;
-    properties?: CSSProperty[];
+    properties?: Prop[];
 }
 
-export interface CSSProperty {
-    name: TextRange;
-    value: TextRange;
-    valueTokens: TextRange[];
+export interface CSSProperty<R = TextRange> {
+    name: R;
+    value: R;
+    valueTokens: R[];
     before: number;
     after: number;
 }

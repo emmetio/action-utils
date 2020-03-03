@@ -1,2 +1,2 @@
 export { ContextTag, getOpenTag, selectItemHTML } from './html';
-export { CSSSection, getCSSSection, selectItemCSS } from './css';
+export { CSSSection, CSSProperty, getCSSSection, selectItemCSS } from './css';
