@@ -1,4 +1,4 @@
-import { scan, attributes, createOptions, ElementType, AttributeToken } from '@emmetio/html-matcher';
+import { scan, attributes, createOptions, ElementType, AttributeToken, ScannerOptions } from '@emmetio/html-matcher';
 import { pushRange, SelectItemModel, TextRange, tokenList } from './utils';
 
 export interface ContextTag {
@@ -7,6 +7,15 @@ export interface ContextTag {
     start: number;
     end: number;
     attributes?: AttributeToken[];
+}
+
+export interface TagMatch {
+    /** Tag name */
+    name: string;
+    /** Range of open tag */
+    open: TextRange;
+    /** Range of close tag */
+    close?: TextRange;
 }
 
 /**
@@ -33,6 +42,62 @@ export function getOpenTag(code: string, pos: number): ContextTag | void {
     }, opt.special);
 
     return tag;
+}
+
+/**
+ * Returns list of matched tags in given source code
+ */
+export function getTagMatches(code: string, options?: Partial<ScannerOptions>): TagMatch[] {
+    const opt = createOptions(options);
+    const stack: TagMatch[] = [];
+    const result: TagMatch[] = [];
+
+    scan(code, (name, type, start, end) => {
+        if (type === ElementType.SelfClose) {
+            result.push({ name, open: [start, end] });
+        } else if (type === ElementType.Open) {
+            const item: TagMatch = { name, open: [start, end] };
+            stack.push(item);
+            result.push(item);
+        } else {
+            // Handle closing tag
+            while (stack.length) {
+                const item = stack.pop()!;
+                if (item.name === name) {
+                    item.close = [start, end];
+                    break;
+                }
+            }
+        }
+    }, opt.special);
+
+    return result;
+}
+
+/**
+ * Finds tag match for given position
+ */
+export function findTagMatch(source: string | TagMatch[], pos: number, options?: Partial<ScannerOptions>): TagMatch | undefined {
+    if (typeof source === 'string') {
+        source = getTagMatches(source, options);
+    }
+
+    let candidate: TagMatch | undefined;
+    source.some(match => {
+        const start = match.open[0];
+        const end = match.close ? match.close[1] : match.open[1];
+
+        if (pos < start) {
+            // All the following tags will be after given position, stop searching
+            return true;
+        }
+
+        if (pos > start && pos < end) {
+            candidate = match;
+        }
+    });
+
+    return candidate;
 }
 
 /**

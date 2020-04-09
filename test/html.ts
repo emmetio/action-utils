@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { deepStrictEqual as deepEqual, strictEqual as equal } from 'assert';
-import { selectItemHTML, getOpenTag } from '../src/html';
+import { selectItemHTML, getOpenTag, findTagMatch } from '../src/html';
 
 const sample = fs.readFileSync(path.resolve(__dirname, './samples/sample.html'), 'utf8');
 
@@ -103,4 +103,34 @@ describe('HTML', () => {
 
         equal(getOpenTag(sample, 74), undefined);
     });
+
+    it('tag match', () => {
+        // Inside <li> open tag
+        deepEqual(findTagMatch(sample, 17), {
+            name: 'li',
+            open: [9, 33],
+            close: [94, 99],
+        });
+
+        // Inside text content
+        deepEqual(findTagMatch(sample, 38), {
+            name: 'li',
+            open: [9, 33],
+            close: [94, 99],
+        });
+
+        deepEqual(findTagMatch(sample, 78), {
+            name: 'a',
+            open: [42, 74],
+            close: [85, 89],
+        });
+
+        // Inside close tag
+        deepEqual(findTagMatch(sample, 131), {
+            name: 'li',
+            open: [104, 128],
+            close: [128, 133],
+        });
+    });
+
 });
