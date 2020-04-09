@@ -24,7 +24,6 @@ export interface TagMatch {
  */
 export function getOpenTag(code: string, pos: number): ContextTag | void {
     let tag: ContextTag | void = void 0;
-    const opt = createOptions();
 
     // Find open or self-closing tag, closest to given position
     scan(code, (name, type, start, end) => {
@@ -39,7 +38,7 @@ export function getOpenTag(code: string, pos: number): ContextTag | void {
         if (end > pos) {
             return false;
         }
-    }, opt.special);
+    });
 
     return tag;
 }
@@ -69,7 +68,7 @@ export function getTagMatches(code: string, options?: Partial<ScannerOptions>): 
                 }
             }
         }
-    }, opt.special);
+    }, opt);
 
     return result;
 }
@@ -112,7 +111,6 @@ export function selectItemHTML(code: string, pos: number, isPrev?: boolean): Sel
  */
 function selectNextItem(code: string, pos: number): SelectItemModel | void {
     let result: SelectItemModel | void = void 0;
-    const opt = createOptions();
 
     // Find open or self-closing tag, closest to given position
     scan(code, (name, type, start, end) => {
@@ -121,7 +119,7 @@ function selectNextItem(code: string, pos: number): SelectItemModel | void {
             result = getTagSelectionModel(code, name, start, end);
             return false;
         }
-    }, opt.special);
+    });
 
     return result;
 }
@@ -130,7 +128,6 @@ function selectNextItem(code: string, pos: number): SelectItemModel | void {
  * Returns list of ranges for Select Previous Item action
  */
 function selectPreviousItem(code: string, pos: number): SelectItemModel | void {
-    const opt = createOptions();
     let lastType: ElementType | null = null;
     let lastName = '';
     let lastStart = -1;
@@ -149,7 +146,7 @@ function selectPreviousItem(code: string, pos: number): SelectItemModel | void {
             lastStart = start;
             lastEnd = end;
         }
-    }, opt.special);
+    });
 
     if (lastType !== null) {
         return getTagSelectionModel(code, lastName, lastStart, lastEnd);
