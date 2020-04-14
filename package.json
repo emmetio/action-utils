@@ -12,7 +12,9 @@
     "clean": "rm -rf ./dist",
     "prepare": "npm run lint && npm test && npm run clean && npm run build"
   },
-  "keywords": [],
+  "keywords": [
+    "emmet"
+  ],
   "author": "Sergey Chikuyonok <serge.che@gmail.com>",
   "license": "MIT",
   "devDependencies": {
@@ -27,9 +29,9 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "@emmetio/css-matcher": "^1.0.0",
-    "@emmetio/html-matcher": "^1.2.1",
-    "emmet": "^2.0.0-rc.13"
+    "@emmetio/css-matcher": "^1.0.2",
+    "@emmetio/html-matcher": "^1.2.3",
+    "emmet": "^2.0.0"
   },
   "mocha": {
     "require": "ts-node/register",
