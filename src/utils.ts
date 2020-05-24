@@ -56,3 +56,17 @@ export function tokenList(value: string, offset = 0): TextRange[] {
 
     return ranges;
 }
+
+/**
+ * Check if given character is a quote
+ */
+export function isQuote(ch: string | undefined) {
+    return ch === '"' || ch === '\'';
+}
+
+/**
+ * Returns last element of given array
+ */
+export function last<T>(arr: T[]): T | undefined {
+    return arr.length > 0 ? arr[arr.length - 1] : undefined;
+}
