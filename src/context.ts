@@ -31,6 +31,7 @@ export interface HTMLMatch {
 }
 
 export interface HTMLContext {
+    type: 'html',
     /** List of ancestor elements for current context */
     ancestors: HTMLAncestor[];
     /** Tag match directly under given position */
@@ -49,6 +50,7 @@ export interface CSSMatch {
 }
 
 export interface CSSContext {
+    type: 'css',
     /** List of ancestor sections for current context */
     ancestors: CSSMatch[];
     /** CSS match directly under given position */
@@ -62,6 +64,7 @@ export interface CSSContext {
  */
 export function getHTMLContext(code: string, pos: number, opt: HTMLContextOptions = {}): HTMLContext {
     const result: HTMLContext = {
+        type: 'html',
         ancestors: [],
         current: null,
         css: null
@@ -120,6 +123,7 @@ export function getHTMLContext(code: string, pos: number, opt: HTMLContextOption
  */
 export function getCSSContext(code: string, pos: number): CSSContext {
     const result: CSSContext = {
+        type: 'css',
         ancestors: [],
         current: null,
         inline: false
