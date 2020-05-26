@@ -57,6 +57,11 @@ export interface CSSContext {
     current: CSSMatch | null;
     /** Whether CSS context is inline, e.g. in `style=""` HTML attribute */
     inline: boolean;
+    /**
+     * If current CSS context is embedded into HTML, this property contains
+     * range of CSS source in original content
+     */
+    embedded?: TextRange;
 }
 
 /**
@@ -121,12 +126,13 @@ export function getHTMLContext(code: string, pos: number, opt: HTMLContextOption
 /**
  * Returns CSS context for given location in source code
  */
-export function getCSSContext(code: string, pos: number): CSSContext {
+export function getCSSContext(code: string, pos: number, embedded?: TextRange): CSSContext {
     const result: CSSContext = {
         type: 'css',
         ancestors: [],
         current: null,
-        inline: false
+        inline: false,
+        embedded
     };
 
     const pool: ScanItem[] = [];
@@ -187,7 +193,7 @@ function detectCSSContextFromHTML(code: string, pos: number, ctx: HTMLContext): 
                 if (attr.name === 'style' && attr.value != null) {
                     const [valueStart, valueEnd] = attributeValueRange(tag, attr, elem.range[0]);
                     if (pos >= valueStart && pos <= valueEnd) {
-                        cssCtx = getCSSContext(code.slice(valueStart, valueEnd), pos - valueStart);
+                        cssCtx = getCSSContext(code.slice(valueStart, valueEnd), pos - valueStart, [valueStart, valueEnd]);
                         applyOffset(cssCtx, valueStart);
                         cssCtx.inline = true;
                         return true;
@@ -209,7 +215,7 @@ function detectCSSContextFromHTML(code: string, pos: number, ctx: HTMLContext): 
                 }
             });
 
-            cssCtx = getCSSContext(code.slice(styleStart, styleEnd), pos - styleStart);
+            cssCtx = getCSSContext(code.slice(styleStart, styleEnd), pos - styleStart, [styleStart, styleEnd]);
             applyOffset(cssCtx, styleStart);
         }
     }

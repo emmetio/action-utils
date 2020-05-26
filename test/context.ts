@@ -68,6 +68,7 @@ describe('Context detector', () => {
             range: [220, 227]
         });
         equal(ctx.css!.inline, false);
+        deepEqual(ctx.css!.embedded, [192, 409]);
 
         // Before `display` CSS property of <style>
         ctx = getHTMLContext(html, 331);
@@ -84,6 +85,7 @@ describe('Context detector', () => {
         ]);
         deepEqual(ctx.css!.current, null);
         equal(ctx.css!.inline, false);
+        deepEqual(ctx.css!.embedded, [192, 409]);
 
         // Before `10px` of `padding` CSS property in style=""
         ctx = getHTMLContext(html, 488);
@@ -104,6 +106,7 @@ describe('Context detector', () => {
         ]);
         deepEqual(ctx.css!.current, null);
         equal(ctx.css!.inline, true);
+        deepEqual(ctx.css!.embedded, [479, 506]);
     });
 
     it('SCSS', () => {
