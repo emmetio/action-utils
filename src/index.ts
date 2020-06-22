@@ -2,3 +2,8 @@ export { ContextTag, getOpenTag, selectItemHTML, getTagMatches, findTagMatch, Ta
 export { CSSSection, CSSProperty, getCSSSection, selectItemCSS } from './css';
 export { getHTMLContext, getCSSContext, CSSContext, CSSMatch, HTMLAncestor, HTMLContext, HTMLContextOptions, HTMLMatch } from './context';
 export { SelectItemModel, TextRange } from './utils';
+export {
+    AbbreviationTracker, AbbreviationTrackerValid, AbbreviationTrackerError, AbbreviationTrackerType,
+    AbbreviationTrackingController, AbbreviationError, EditorProxy, StartTrackingParams, StopTrackingParams,
+    JSX_PREFIX
+} from './tracker';

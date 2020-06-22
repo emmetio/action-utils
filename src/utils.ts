@@ -1,9 +1,22 @@
+import { AttributeToken } from '@emmetio/html-matcher';
+
 export type TextRange = [number, number];
 
 export interface SelectItemModel {
     start: number;
     end: number;
     ranges: TextRange[];
+}
+
+export const pairs = {
+    '{': '}',
+    '[': ']',
+    '(': ')'
+};
+
+export const pairsEnd: string[] = [];
+for (const key of Object.keys(pairs)) {
+    pairsEnd.push(pairs[key]);
 }
 
 /**
@@ -62,6 +75,52 @@ export function tokenList(value: string, offset = 0): TextRange[] {
  */
 export function isQuote(ch: string | undefined) {
     return ch === '"' || ch === '\'';
+}
+
+/**
+ * Returns value of given attribute, parsed by Emmet HTML matcher
+ */
+export function attributeValue(attr: AttributeToken): string | undefined {
+    const { value } = attr
+    return value && isQuoted(value)
+        ? value.slice(1, -1)
+        : value;
+}
+
+export function attributeValueRange(tag: string, attr: AttributeToken, offset = 0): TextRange {
+    let valueStart = attr.valueStart!;
+    let valueEnd = attr.valueEnd!;
+
+    if (isQuote(tag[valueStart])) {
+        valueStart++;
+    }
+
+    if (isQuote(tag[valueEnd - 1]) && valueEnd > valueStart) {
+        valueEnd--;
+    }
+
+    return [offset + valueStart, offset + valueEnd];
+}
+
+/**
+ * Check if given value is either quoted or written as expression
+ */
+export function isQuoted(value: string | undefined): boolean {
+    return !!value && (isQuotedString(value) || isExprString(value));
+}
+
+/**
+ * Check if given string is quoted with single or double quotes
+ */
+export function isQuotedString(str: string): boolean {
+    return str.length > 1 && isQuote(str[0]) && str[0] === str.slice(-1);
+}
+
+/**
+ * Check if given string contains expression, e.g. wrapped with `{` and `}`
+ */
+function isExprString(str: string): boolean {
+    return str[0] === '{' && str.slice(-1) === '}';
 }
 
 /**

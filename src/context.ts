@@ -1,6 +1,7 @@
-import { scan, createOptions, attributes, ElementType, AttributeToken, ScannerOptions } from '@emmetio/html-matcher';
+import { scan, createOptions, attributes, ElementType, ScannerOptions } from '@emmetio/html-matcher';
 import { scan as scanCSS, TokenType } from '@emmetio/css-matcher';
-import { isQuote, last, TextRange } from './utils';
+import { attributeValue, attributeValueRange, last, TextRange } from './utils';
+import { CSSAbbreviationScope } from 'emmet';
 
 interface ScanItem {
     name: string;
@@ -62,6 +63,13 @@ export interface CSSContext {
      * range of CSS source in original content
      */
     embedded?: TextRange;
+}
+
+export interface AbbreviationContext {
+    name: string;
+    attributes?: {
+        [name: string]: string | null;
+    };
 }
 
 /**
@@ -179,6 +187,61 @@ export function getCSSContext(code: string, pos: number, embedded?: TextRange): 
 }
 
 /**
+ * Returns embedded stylesheet syntax from given HTML context
+ */
+export function getEmbeddedStyleSyntax(code: string, ctx: HTMLContext): string | undefined {
+    const parent = last(ctx.ancestors);
+    if (parent && parent.name === 'style') {
+        for (const attr of attributes(code.slice(parent.range[0], parent.range[1]), parent.name)) {
+            if (attr.name === 'type') {
+                return attributeValue(attr);
+            }
+        }
+    }
+}
+
+/**
+ * Returns context for Emmet abbreviation from given HTML context
+ */
+export function getMarkupAbbreviationContext(code: string, ctx: HTMLContext): AbbreviationContext | undefined {
+    const parent = last(ctx.ancestors);
+    if (parent) {
+        const attrs: { [name: string]: string } = {};
+        for (const attr of attributes(code.slice(parent.range[0], parent.range[1]), parent.name)) {
+            attrs[attr.name] = attributeValue(attr) || '';
+        }
+
+        return {
+            name: parent.name,
+            attributes: attrs
+        };
+    }
+}
+
+/**
+ * Returns context for Emmet abbreviation from given CSS context
+ */
+export function getStylesheetAbbreviationContext(ctx: CSSContext): AbbreviationContext {
+    if (ctx.inline) {
+        return { name: CSSAbbreviationScope.Property }
+    }
+
+    const parent = last(ctx.ancestors);
+    let scope: string = CSSAbbreviationScope.Global;
+    if (ctx.current) {
+        if (ctx.current.type === TokenType.PropertyValue && parent) {
+            scope = parent.name;
+        } else if ((ctx.current.type === TokenType.Selector || ctx.current.type === TokenType.PropertyName) && !parent) {
+            scope = CSSAbbreviationScope.Section;
+        }
+    }
+
+    return {
+        name: scope
+    };
+}
+
+/**
  * Tries to detect CSS context from given HTML context and returns it
  */
 function detectCSSContextFromHTML(code: string, pos: number, ctx: HTMLContext): CSSContext | null {
@@ -221,21 +284,6 @@ function detectCSSContextFromHTML(code: string, pos: number, ctx: HTMLContext): 
     }
 
     return cssCtx;
-}
-
-function attributeValueRange(tag: string, attr: AttributeToken, offset = 0): [number, number] {
-    let valueStart = attr.valueStart!;
-    let valueEnd = attr.valueEnd!;
-
-    if (isQuote(tag[valueStart])) {
-        valueStart++;
-    }
-
-    if (isQuote(tag[valueEnd - 1]) && valueEnd > valueStart) {
-        valueEnd--;
-    }
-
-    return [offset + valueStart, offset + valueEnd];
 }
 
 /**
