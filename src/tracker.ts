@@ -1,6 +1,6 @@
 import expand, {
     stylesheetAbbreviation, markupAbbreviation,
-    UserConfig, MarkupAbbreviation, StylesheetAbbreviation, Options, CSSAbbreviationScope
+    UserConfig, MarkupAbbreviation, StylesheetAbbreviation, Options, CSSAbbreviationScope, SyntaxType
 } from 'emmet';
 import { TokenType } from '@emmetio/css-matcher';
 import { getHTMLContext, getCSSContext, getEmbeddedStyleSyntax, CSSContext, getMarkupAbbreviationContext, getStylesheetAbbreviationContext } from './context';
@@ -73,7 +73,14 @@ export interface EditorProxy {
     allowTracking(pos: number): boolean;
 
     /**
-     * Check if given syntax is a CSS dialect (including SCSS, LESS etc)
+     * Returns Emmet abbreviation type for given syntax
+     */
+    syntaxType(syntax: string): SyntaxType;
+
+    /**
+     * Check if given syntax is a CSS dialect, e.g. has similar to CSS syntax.
+     * For example, SCSS has the same syntax as CSS, but Sass isn’t since it’s
+     * indent-based.
      */
     isCSS(syntax: string): boolean;
 
@@ -503,7 +510,10 @@ export class AbbreviationTrackingController<E extends EditorProxy> {
                 };
             }
         } else {
-            return { syntax, type: 'markup' };
+            return {
+                syntax,
+                type: editor.syntaxType(syntax)
+            };
         }
     }
 
