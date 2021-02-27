@@ -164,13 +164,13 @@ export function getCSSContext(code: string, pos: number, embedded?: TextRange): 
 
         switch (type) {
             case TokenType.Selector:
-                case TokenType.PropertyName:
+            case TokenType.PropertyName:
                 stack.push(allocItem(pool, code.slice(start, end), type, start, end));
                 break;
 
             case TokenType.PropertyValue:
             case TokenType.BlockEnd:
-                stack.pop();
+                releaseItem(pool, stack.pop());
                 break;
         }
     });
@@ -305,8 +305,10 @@ function allocItem(pool: ScanItem[], name: string, type: string | number, start:
     return { name, type, start, end };
 }
 
-function releaseItem(pool: ScanItem[], item: ScanItem) {
-    pool.push(item);
+function releaseItem(pool: ScanItem[], item?: ScanItem) {
+    if (item) {
+        pool.push(item);
+    }
 }
 
 function applyOffset(ctx: CSSContext, offset: number) {

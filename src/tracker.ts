@@ -393,14 +393,11 @@ export class AbbreviationTrackingController<E extends EditorProxy> {
         const tracker = this.getStoredTracker(editor);
 
         if (tracker && tracker.range[0] <= pos && tracker.range[1] >= pos) {
-            // Tracker can be restored at given location. Make sure it’s contents matches
-            // contents of editor at the same location. If it doesn’t, reset stored tracker
-            // since it’s not valid anymore
-            this.cache.delete(editor.id);
             const [from, to] = tracker.range;
 
             if (editor.substr(from + tracker.offset, to) === tracker.abbreviation) {
                 this.trackers.set(editor.id, tracker);
+                tracker.lastLength = editor.size();
                 return tracker;
             }
         }
@@ -512,7 +509,8 @@ export class AbbreviationTrackingController<E extends EditorProxy> {
         } else {
             return {
                 syntax,
-                type: editor.syntaxType(syntax)
+                type: editor.syntaxType(syntax),
+                options: editor.outputOptions(pos)
             };
         }
     }
